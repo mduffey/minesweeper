@@ -24,6 +24,7 @@ body {
 
 #board {
     background-color: lightgray;
+    border-spacing: 1px;
 }
 
 button {
