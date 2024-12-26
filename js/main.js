@@ -40,28 +40,55 @@ document.getElementById('size-btns').addEventListener('click', function(e) {
   render();
 });
 
+function getCell(target) {
+  clickedEl = target.tagName.toLowerCase() === 'img' ? target.parentElement : target;
+  if (clickedEl.classList.contains('game-cell')) {
+    if (!timerId) setTimer();  
+    var row = parseInt(clickedEl.dataset.row);
+    var col = parseInt(clickedEl.dataset.col);
+    return board[row][col];
+  }
+  return undefined;
+}
+
+boardEl.addEventListener('contextmenu', function(e) {
+  if (winner || hitBomb) return;
+  var cell = getCell(e.target);
+
+  if (!cell) {
+    return;
+  }
+  e.preventDefault();
+  e.stopPropagation();
+  
+  if (!cell.revealed && bombCount > 0) {
+    bombCount += cell.flag() ? -1 : 1;
+  }
+  winner = getWinner();
+  render();
+});
+
 boardEl.addEventListener('click', function(e) {
   if (winner || hitBomb) return;
   var clickedEl;
-  clickedEl = e.target.tagName.toLowerCase() === 'img' ? e.target.parentElement : e.target;
-  if (clickedEl.classList.contains('game-cell')) {
-    if (!timerId) setTimer();
-    var row = parseInt(clickedEl.dataset.row);
-    var col = parseInt(clickedEl.dataset.col);
-    var cell = board[row][col];
-    if (e.shiftKey && !cell.revealed && bombCount > 0) {
-      bombCount += cell.flag() ? -1 : 1;
-    } else {
-      hitBomb = cell.reveal();
-      if (hitBomb) {
-        revealAll();
-        clearInterval(timerId);
-        e.target.style.backgroundColor = 'red';
-      }
-    }
-    winner = getWinner();
-    render();
+  var cell = getCell(e.target);
+
+  if (!cell) {
+    return;
   }
+
+  if (e.shiftKey && !cell.revealed && bombCount > 0) {
+    bombCount += cell.flag() ? -1 : 1;
+  } else {
+    hitBomb = cell.reveal();
+    if (hitBomb) {
+      revealAll();
+      clearInterval(timerId);
+      e.target.style.backgroundColor = 'red';
+    }
+  }
+  winner = getWinner();
+  render();
 });
 
 function createResetListener() { 
